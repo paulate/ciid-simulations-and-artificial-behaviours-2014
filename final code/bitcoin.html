@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="js/paper.js"></script>
+<script type="text/javascript" src="js/paper-error.js"></script><!-- error helper -->
+<script type="text/javascript" src="js/paper-timeline.js"></script><!-- animation library -->
+<script type="text/javascript" src="js/paper-agents.js"></script><!-- agent library -->
+<script type="text/javascript" src="js/signals-data.js"></script><!-- data -->
+<script type="text/javascript" src="js/signals.js"></script><!-- signals library -->
+<script type="text/paperscript" canvas="bitcoinData">
+	var bitcoin = new BitcoinSignal();
+	
+	var rect = new Path.Rectangle(new Point(0, 100), new Size(500, 200));
+	rect.fillColor = new Color(1, 0, 0, 1);
+	
+	var rect2 = new Path.Rectangle(new Point(0, 300), new Size(500, 200));
+	rect2.fillColor = new Color(1, 0, 0, 1);
+	
+	var rect3 = new Path.Rectangle(new Size(5, 20));
+	rect3.position = new Point(250, 250);
+	rect3.fillColor = new Color(1, 1, 0, 1);
+	
+	var lineValues = [];
+	var line = new Path();
+	line.strokeColor = 'white';
+	for(var i=0; i<100; i++) {
+	  var value = bitcoin.getValue(i/100);
+	  var p = new Point(i/100*view.size.width, 100 - value * 100);
+	  line.add(p);
+	}
+	
+	var scanLine = new Path.Line(new Point(0, 0), new Point(0, 100));
+	scanLine.strokeColor = 'green';
+	
+	function onFrame(event) {
+	  bitcoin.update(event.time);
+	  rect.fillColor.red = bitcoin.value;
+	  rect2.fillColor.red = bitcoin.avgValue;
+	  rect3.position.x = view.size.width/2 + view.size.width/2 * bitcoin.delta * 5;
+	
+	  scanLine.position.x = (event.time/60 % 1) * view.size.width;
+	
+	  if (bitcoin.delta > 0) rect3.fillColor = 'green';
+	  else rect3.fillColor = 'yellow';
+	
+	  if (event.count % 10 == 0) {
+	    var avgRect = new Path.Rectangle(new Point(0, 100), new Size(2, 2));
+	    avgRect.position = new Point(bitcoin.currentIndex/288*view.size.width, 100 - 100 * bitcoin.avgValue);
+	    avgRect.fillColor = new Color(1, 0, 1, 1);
+	  }
+	}
+</script>
+
+<script type="text/paperscript" canvas="myCanvas">
+//map function
+function map(value, start1, stop1, start2, stop2) {
+ 	var mappedValue = ((value-start1)/(stop1 - start1))*(stop2-start2)+start2;
+	return mappedValue;
+}
+
+//all the variables
+var bitcoin = new BitcoinSignal();
+var radius = 20;
+var circle = new Path.RegularPolygon(view.center,36,radius);
+var flowerRadius = 1;
+var traceLines = [];
+var totalFactor = 0;          
+var scaleFactor = 0;   
+var copy = circle.clone();
+
+function getCircleSegmentLocations(circle){
+	var locations = [];
+	for (i = 0; i<circle.segments.length; i++){
+			locations.push(circle.segments[i].point);
+	}
+	return locations;
+}
+
+var circleLocations = getCircleSegmentLocations(circle);
+
+//the draw loop					                                      
+function onFrame(event) { 
+	//reset data every 60 seconds
+  var resetTime = (event.time % 60);
+	var time = resetTime;
+  bitcoin.update(time);                                  
+	
+  // do the flower thing               
+  var waveOffset = Math.sin(time*5*bitcoin.avgValue)*200*bitcoin.value;
+  var circleOffX = Math.sin(time)*(flowerRadius*80*bitcoin.value+waveOffset);
+  var circleOffY = Math.cos(time)*(flowerRadius*80*bitcoin.value+waveOffset);
+  var x = view.center.x + circleOffX;        
+  var y = view.center.y + circleOffY;
+  circle.position = view.center;//[x,y];
+	copy.remove();
+	copy = circle.clone();
+
+	// Move the copy to {x: 100, y: 100}
+	copy.position = [x,y];
+	copy.fillColor = new Color(1);
+  //trace 
+	var traceLine = new Path.Line(view.center,copy.position);
+	traceLine.strokeColor = new Color(1,.2);
+	traceLines.push(traceLine);
+  // tracePath.add(copy.position);
+  if (traceLines.length > 300) {
+		traceLines[0].remove();
+    traceLines.shift();
+  }
+  
+	
+	totalFactor += scaleFactor;
+
+  if ((event.count % 3600) == 0) { //every minute, reset... 
+	  circle.remove();
+	  circle = new Path.RegularPolygon([x,y],36,radius);
+	  // circle.fillColor = 'black';
+	}
+	else {
+			scaleFactor = (bitcoin.delta*5)+1;
+
+	  for (i = 0; i<circle.segments.length; i++){
+
+			var originalCircleVector = circleLocations[i]-circle.position;
+			var scaleVector = originalCircleVector*scaleFactor;
+      // var vectorRadius = circle.segments[i].point - circle.position;
+			// var originalRadius = new Point(radius,0) - new Point(0,0);
+			// var scaleVector = new Point(scaleFactor,0) - new Point(0,0);
+			// if (scaleVector.x <0){
+			// 	console.log(scaleVector);
+			// }
+			// scaleVector.angle = originalCircleVector.angle;
+			// originalRadius.angle = originalCircleVector.angle;
+			if (i %2 ==0){
+				circle.segments[i].point = circle.position+scaleVector;
+			}
+	  } // end for loop to calculate points
+	}
+
+}
+
+
+</script>
+</head>
+<body style="background:#444444">
+  <canvas id="myCanvas" width="500" height="500" style="background:black;"></canvas>
+  <canvas id="bitcoinData" width="500" height="500" style="background:black;"></canvas>
+	
+</body>
+</html>

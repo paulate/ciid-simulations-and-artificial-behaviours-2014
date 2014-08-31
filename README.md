@@ -1,132 +1,29 @@
-Simulations and Artificial Behaviours
-=====================================
+For full documentation see the original repo: https://github.com/vorg/ciid-simulations-and-artificial-behaviours-2014
 
-Workshop at [CIID](http://ciid.dk), Copenhagen, February 2014 by [David Gauthier](http://gauthiier.info) & [Marcin Ignac](http://marcinignac.com)
+## About the project
+Data is often cold, hard, and lifeless; finding ways to relate to it, however, can enhance our understanding of our environment.
 
+As part of a one week class, in this one-day project, we created two personifications of real-world data, meant to simulate displays that could be embedded in a watch or wearable device. We focused on giving the data a personality that would determine its behavior.
 
-## Day 4: Signals
+## Frolicking Bitcoin Sensor
+- See the bitcoin sensor in action
+- Code
+The bitcoin sensor gathers bitcoin values throughout the day (in this example, the day’s worth of data is compressed into a minute). As bitcoin values fluctuate, the moving ball jumps and frolics, outlining the current bitcoin value and recent history. Larger bitcoin values are illustrated through longer “petals”. The spikes on the moving ball add additional vivacious behavior, expanding and contracting to show the size of change in bitcoin value.
 
-Include signals library
+## Timid/Assertive Glucose Sensor
+- See the glucose sensor in action
+- Code
+The glucose sensor measures glucose levels of an individual throughout the day (compressed into one minute). The agents that personify the sensor change from timid behavior on low glucose levels, stable behavior on normal glucose levels, and assertive behavior on high glucose levels.
 
-	<script type="text/javascript" src="js/signals-data.js"></script>
-	<script type="text/javascript" src="js/signals.js"></script>
+In this case, we aimed to personify extreme glucose levels in ways which would imply a deviance from the norm; low glucose would be too weak, while high glucose would be too strong. The background color parallels the agents’ behavior by moving from a weak to high saturation of red.
 
-### Bitcoin
-	
-**Properties:**
+## Process
+We designed these web-based sensors in javascript, using the paper.js library. 
 
-`value` - bitcoin price level (0..1)  
-`avgValue` - avg bitcoin price level (0..1)  
-`delta` - bitcoin price level change (-1..1)  
-`price` - bitcoin price in US dollars
-
-**Events:**
-
-*None*
-
-
-**Example:**
-
-	var bitcoin = new BitcoinSignal();
-		
-	function onFrame(event) {
-		bitcoin.update(event.time)
-		console.log(bitcoin.value);
-		console.log(bitcoin.avgValue);
-		console.log(bitcoin.delta);
-		console.log(bitcoin.price);
-	}
-	
-### Email
-	
-**Properties:**
-
-`value` - new email level (0..1)  
-`avgValue` - avg new email level (0..1)  
-`delta` - new email level change (-1..1)  
-`count` - number of new emails
-
-**Events:**
-
-`onEmail` - fired when new email arrives
-
-
-**Example:**
-
-	var email = new EmailSignal();
-
-	email.onEmail = function(count) {
-		console.log('You've got a message!')
-	}
-		
-	function onFrame(event) {
-		email.update(event.time)
-		console.log(email.value);
-		console.log(email.avgValue);
-		console.log(email.delta);
-		console.log(email.count);
-		
-	}
-
-### Glucose
-	
-Properties:
-
-`value` - glucose level (0..1)  
-`avgValue` - avg glucose level (0..1)   
-`delta` - glucose level change (-1..1)    
-`level` - glucose level (raw data)  
-`carbs` - carbohydrates level (food) (raw data)
-
-Events:
-
-`onFood` - fired when patient eats food
-
-Example:
-
-
-	var glucose = new GlucoseSignal();
-
-	glucose.onFood = function(carbs) {
-		console.log('mniam mniam!')
-	}
-	
-	function onFrame(event) {
-		glucose.update(event.time)
-		console.log(glucose.value);
-		console.log(glucose.avgValue);
-		console.log(glucose.delta);
-		console.log(glucose.level);
-	}
-
-### Weather
-
-Properties:
-
-`value` - wind speed level (0..1)  
-`avgValue` - avg wind speed level (0..1)   
-`delta` - wind speed level change (-1..1)    
-`windSpeed` - wind speed  
-`windDirection` - wind direction  
-`temperature` - temperature  
-
-Events:
-
-*none*
-
-Example:
-
-
-	var weather = new WeatherSignal();
-	
-	function onFrame(event) {
-		weather.update(event.time)
-		console.log(weather.value);
-		console.log(weather.avgValue);
-		console.log(weather.delta);
-		console.log(weather.windSpeed);
-		console.log(weather.windDirection);
-		console.log(weather.temperature);
-	}
-
+###Credits:
+- Francesca Desmarais
+- Paula Te
+- paper.js
+- vorg
+- gauthiier
 
